@@ -1,6 +1,6 @@
 <?php
 
-namespace Alura\Leilao\Test\Model;
+namespace Alura\Leilao\Tests\Model;
 
 use Alura\Leilao\Model\Lance;
 use Alura\Leilao\Model\Leilao;
@@ -11,18 +11,21 @@ class LeilaoTest extends TestCase
 {
     public function testLeilaoNaoDeveReceberLancesRepetidos()
     {
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('Usuário não pode propor 2 lances consecutivos');
         $leilao = new Leilao('Variante');
         $ana = new Usuario('Ana');
 
         $leilao->recebeLance(new Lance($ana, 1000));
         $leilao->recebeLance(new Lance($ana, 1500));
-
-        static::assertCount(1, $leilao->getLances());
-        static::assertEquals(1000, $leilao->getLances()[0]->getValor());
     }
 
-    public function testLeilaoNaoDeveAceitarMaisDe5LancesPorUsuario(){
-        $leilao = new Leilao('Brasília amarela');
+    public function testLeilaoNaoDeveAceitarMaisDe5LancesPorUsuario()
+    {
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('Usuário não pode propor mais de 5 lances por leilão');
+
+        $leilao = new Leilao('Brasília Amarela');
         $joao = new Usuario('João');
         $maria = new Usuario('Maria');
 
@@ -38,9 +41,6 @@ class LeilaoTest extends TestCase
         $leilao->recebeLance(new Lance($maria, 5500));
 
         $leilao->recebeLance(new Lance($joao, 6000));
-
-        static::assertCount(10, $leilao->getLances());
-        static::assertEquals(5500, $leilao->getLances()[array_key_last($leilao->getLances())]->getValor());
     }
 
     /**
@@ -51,7 +51,6 @@ class LeilaoTest extends TestCase
         Leilao $leilao,
         array $valores
     ) {
-
         static::assertCount($qtdLances, $leilao->getLances());
 
         foreach ($valores as $i => $valorEsperado) {
@@ -61,20 +60,19 @@ class LeilaoTest extends TestCase
 
     public function geraLances()
     {
-
-        $maria = new Usuario('Maria');
         $joao = new Usuario('João');
+        $maria = new Usuario('Maria');
 
         $leilaoCom2Lances = new Leilao('Fiat 147 0KM');
         $leilaoCom2Lances->recebeLance(new Lance($joao, 1000));
         $leilaoCom2Lances->recebeLance(new Lance($maria, 2000));
 
-        $leilaoCom1Lances = new Leilao('Fiat 147 0KM');
-        $leilaoCom1Lances->recebeLance(new Lance($maria, 5000));
+        $leilaoCom1Lance = new Leilao('Fusca 1972 0KM');
+        $leilaoCom1Lance->recebeLance(new Lance($maria, 5000));
 
         return [
-            '2-Lances' => [2, $leilaoCom2Lances, [1000, 2000]],
-            '1-Lance' => [1, $leilaoCom1Lances, [5000]]
+            '2-lances' => [2, $leilaoCom2Lances, [1000, 2000]],
+            '1-lance' => [1, $leilaoCom1Lance, [5000]]
         ];
     }
 }
